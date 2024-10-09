@@ -1,16 +1,7 @@
 using OpenQA.Selenium;
-using System;
 using System.Text.RegularExpressions;
-using TechTalk.SpecFlow;
 using VehicleValuation.PageObjects;
-using static System.Net.Mime.MediaTypeNames;
-using System.Linq;
-using System.Security.Cryptography;
 using VehicleValuation.Models;
-using FluentAssertions.Execution;
-using System.Text;
-using NPOI.SS.Formula.Functions;
-using System.Formats.Asn1;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -24,13 +15,52 @@ namespace VehicleValuation.StepDefinitions
         private readonly CarValuationPage _valuationPage;
         private List<string> vehicleNumbers;
         private readonly string outputFilePath = @"C:\Users\srila\OneDrive\Desktop\OutputFile.txt";
+        private  List<ValuationDetails> valuationDetailsList = new List<ValuationDetails>();
         public CarValuationStepDefinitions(IWebDriver driver, CarValuationPage valuationPage)
         {
             _driver = driver;
             _valuationPage = valuationPage;
         }
 
-        [Given(@"user have a list of vehicle registration numbers from ""([^""]*)""")]
+       
+
+        [When(@"user perform car valuation using the valuation website")]
+        public void WhenUserPerformCarValuationUsingTheValuationWebsite()
+        {
+         
+            foreach (string vehicleNumber in vehicleNumbers)
+            {
+                _driver.Navigate().GoToUrl("https://www.webuyanycar.com");
+                Thread.Sleep(10000);
+                _valuationPage.EnterRegistrationNumber(vehicleNumber);
+                _valuationPage.SubmitForm();             
+                ValuationDetails valuationDetails = _valuationPage.GetValuation();
+                valuationDetailsList.Add(valuationDetails);
+
+            }
+           
+        }
+
+        [Then(@"user should see the results in the output files")]
+        public void ThenUserShouldSeeTheResultsInTheOutputFiles()
+        {
+            if (!File.Exists(outputFilePath))
+            {
+                throw new FileNotFoundException("Output file not found.");
+            }
+        }
+
+        public List<ValuationDetails> ReadCsvFile(string outputFilePath)
+        {
+            using (var reader = new StreamReader(outputFilePath))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+               return csv.GetRecords<ValuationDetails>().ToList();
+            }
+
+        }
+
+        [Given(@"user have a list of vehicle registration numbers from '([^']*)'")]
         public void GivenUserHaveAListOfVehicleRegistrationNumbersFrom(string inputFilePath)
         {
             if (File.Exists(inputFilePath))
@@ -52,48 +82,30 @@ namespace VehicleValuation.StepDefinitions
             }
         }
 
-        [When(@"user perform car valuation using the valuation website")]
-        public void WhenUserPerformCarValuationUsingTheValuationWebsite()
+        
+
+     
+
+        [Then(@"the output should match expected results '([^']*)'")]
+        public void ThenTheOutputShouldMatchExpectedResults(string expectedFilePath)
         {
-            List<ValuationDetails> valuationDetailsList = new List<ValuationDetails>();
-            foreach (string vehicleNumber in vehicleNumbers) {
-                _driver.Navigate().GoToUrl("https://www.webuyanycar.com/");
-                _valuationPage.EnterRegistrationNumber(vehicleNumber);
-                _valuationPage.SubmitForm();
-                ValuationDetails valuationDetails = _valuationPage.GetValuation();
-                valuationDetailsList.Add(valuationDetails);
-              
-            }
-            using (var writer = new StreamWriter(outputFilePath))
-            using (var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            var ExpectedValuationDetails = ReadCsvFile(expectedFilePath);
+            var ActualValuationDetails = valuationDetailsList;
+            if(ActualValuationDetails.Count!= ExpectedValuationDetails.Count())
             {
-                csv.WriteRecords(valuationDetailsList);
+                throw new Exception("Valuation details do not match");
+            }
+            for (int i = 0; i < ExpectedValuationDetails.Count; i++)
+            {
+                Assert.Equal(ExpectedValuationDetails[i].Manufacturer, ActualValuationDetails[i].Manufacturer);
+                Assert.Equal(ExpectedValuationDetails[i].Model, ActualValuationDetails[i].Model);
+                Assert.Equal(ExpectedValuationDetails[i].Year, ActualValuationDetails[i].Year);
+                Assert.Equal(ExpectedValuationDetails[i].regNumber, ActualValuationDetails[i].regNumber);
             }
         }
 
-        [Then(@"user should see the results in the output files")]
-        public void ThenUserShouldSeeTheResultsInTheOutputFiles()
-        {
-            if (!File.Exists(outputFilePath))
-            {
-                throw new FileNotFoundException("Output file not found.");
-            }
-        }
 
-        [Then(@"the output should match expected results for ""([^""]*)"" and ""([^""]*)""")]
-        public void ThenTheOutputShouldMatchExpectedResultsForAnd(string expectedFilePath, string actualFilePath)
-        {
-            string[] outputData = File.ReadAllLines(outputFilePath);
-            string[] expectedData = File.ReadAllLines(@"C:\Users\srila\OneDrive\Desktop\OutputFile.txt");
 
-            for (int i = 0; i < expectedData.Length; i++)
-            {
-                if (outputData[i] != expectedData[i])
-                {
-                    throw new Exception($"Expected output file differs from Actual file at {i + 1}");
-                }
-            }
 
-        }
     }
 }

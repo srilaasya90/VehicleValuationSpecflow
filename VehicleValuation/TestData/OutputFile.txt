@@ -1,0 +1,2 @@
+regNumber,Model,Year,Milage,Manufacturer
+LT18NAA,PRIUS+ ESTATE - 1.8 VVTi Icon TSS 5dr CVT Auto,2018,"15000",TOYOTA

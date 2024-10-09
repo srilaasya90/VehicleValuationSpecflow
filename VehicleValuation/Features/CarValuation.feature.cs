@@ -80,15 +80,18 @@ namespace VehicleValuation.Features
             this.TestTearDown();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Verify car valuation")]
+        [Xunit.SkippableTheoryAttribute(DisplayName="Verify car valuation")]
         [Xunit.TraitAttribute("FeatureTitle", "CarValuation")]
         [Xunit.TraitAttribute("Description", "Verify car valuation")]
-        public void VerifyCarValuation()
+        [Xunit.InlineDataAttribute("C:\\Users\\srila\\OneDrive\\Desktop\\InputFile.txt", "C:\\Users\\srila\\OneDrive\\Desktop\\Expected\\OutputFile.txt", new string[0])]
+        public void VerifyCarValuation(string inputFilePath, string expectedFilePath, string[] exampleTags)
         {
-            string[] tagsOfScenario = ((string[])(null));
+            string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("InputFilePath", inputFilePath);
+            argumentsOfScenario.Add("ExpectedFilePath", expectedFilePath);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Verify car valuation", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 7
+#line 6
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -99,8 +102,7 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 8
-testRunner.Given("user have a list of vehicle registration numbers from \"C:\\Users\\srila\\OneDrive\\De" +
-                        "sktop\\InputFile.txt\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+testRunner.Given(string.Format("user have a list of vehicle registration numbers from \'{0}\'", inputFilePath), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 9
     testRunner.When("user perform car valuation using the valuation website", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
@@ -109,8 +111,7 @@ testRunner.Given("user have a list of vehicle registration numbers from \"C:\\Us
     testRunner.Then("user should see the results in the output files", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
 #line 11
-    testRunner.And("the output should match expected results for \"C:\\Users\\srila\\OneDrive\\Desktop\\Out" +
-                        "putFile.txt\" and \"C:\\Users\\srila\\OneDrive\\Desktop\\OutputFile.txt\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And(string.Format("the output should match expected results \'{0}\'", expectedFilePath), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
             this.ScenarioCleanup();

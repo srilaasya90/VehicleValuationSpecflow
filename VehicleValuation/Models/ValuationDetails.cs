@@ -8,8 +8,10 @@ namespace VehicleValuation.Models
 {
     public class ValuationDetails
     {
-
-        public string Modelnumber { get; set; }
+        public string regNumber {  get; set; }
+        public string Model { get; set; }
         public string Year { get; set; }
+        public string Milage { get; set; }
+        public string Manufacturer { get; set; }
     }
 }
